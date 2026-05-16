@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Users, Shield, Activity } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,6 +34,21 @@ const Login = () => {
       setPassword('worker123');
     }
     setSelectedRole(role);
+  };
+
+  const handleGoogleSuccess = async (response) => {
+    if (!response?.credential) {
+      return;
+    }
+
+    const result = await loginWithGoogle(response.credential);
+    if (result.success) {
+      if (result.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/worker-dashboard');
+      }
+    }
   };
 
   return (
@@ -113,6 +131,32 @@ const Login = () => {
             >
               Sign In
             </button>
+
+            {googleClientId ? (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3 text-white/60 text-sm">
+                  <span className="h-px flex-1 bg-white/20" />
+                  <span>or continue with</span>
+                  <span className="h-px flex-1 bg-white/20" />
+                </div>
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                      toast.error('Google sign-in was cancelled or failed');
+                    }}
+                    shape="pill"
+                    theme="outline"
+                    text="signin_with"
+                    locale="en"
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-white/60 text-sm text-center pt-2">
+                Google sign-in is not configured.
+              </p>
+            )}
           </div>
 
           <p className="text-center text-white/70 text-sm">

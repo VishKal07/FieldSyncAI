@@ -10,6 +10,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
+
+  const setAuthSession = (authToken, authUser) => {
+    localStorage.setItem('token', authToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+    setToken(authToken);
+    setUser(authUser);
+  };
   
   useEffect(() => {
     if (token) {
@@ -42,14 +49,27 @@ export const AuthProvider = ({ children }) => {
       });
       
       const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setToken(token);
-      setUser(user);
+      setAuthSession(token, user);
       toast.success(`Welcome back, ${user.name}!`);
       return { success: true, role: user.role };
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
+      return { success: false };
+    }
+  };
+
+  const loginWithGoogle = async (credential) => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/google-login', {
+        credential
+      });
+
+      const { token, user } = response.data;
+      setAuthSession(token, user);
+      toast.success(`Welcome back, ${user.name}!`);
+      return { success: true, role: user.role };
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Google login failed');
       return { success: false };
     }
   };
@@ -63,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
   
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

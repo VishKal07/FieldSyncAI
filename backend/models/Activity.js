@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const activitySchema = new mongoose.Schema({
+  templateId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ActivityDefinition'
+  },
   workerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -14,18 +18,31 @@ const activitySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  templateFieldsSnapshot: {
+    type: [
+      {
+        key: String,
+        label: String,
+        type: String
+      }
+    ],
+    default: []
+  },
+  fieldValues: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
   date: {
     type: Date,
     default: Date.now
   },
   activityType: {
     type: String,
-    enum: ['Campaign', 'Survey', 'Training', 'Visit', 'Meeting', 'Other'],
     required: true
   },
   beneficiaryCount: {
     type: Number,
-    required: true,
     min: 0
   },
   issueNoted: {

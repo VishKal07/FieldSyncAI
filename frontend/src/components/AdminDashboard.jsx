@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { BarChart3, Brain, Users, CheckSquare, LogOut, Menu, X } from 'lucide-react';
+import { BarChart3, Brain, Users, CheckSquare, List, LogOut, Menu, X } from 'lucide-react';
 import Overview from './admin/Overview';
 import AIInsights from './admin/AIInsights';
 import WorkersList from './admin/WorkersList';
 import AssignTask from './admin/AssignTask';
+import ActivityDefinitions from './admin/ActivityDefinitions';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -16,6 +17,7 @@ const AdminDashboard = () => {
     { id: 'ai-insights', label: 'AI Insights', icon: Brain },
     { id: 'workers', label: 'Workers', icon: Users },
     { id: 'assign-tasks', label: 'Assign Tasks', icon: CheckSquare },
+    { id: 'activity-definitions', label: 'Activity Setup', icon: List },
   ];
 
   const renderContent = () => {
@@ -28,6 +30,8 @@ const AdminDashboard = () => {
         return <WorkersList />;
       case 'assign-tasks':
         return <AssignTask />;
+      case 'activity-definitions':
+        return <ActivityDefinitions />;
       default:
         return <Overview />;
     }

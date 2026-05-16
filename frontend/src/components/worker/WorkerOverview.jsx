@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { CheckCircle, Clock, Calendar, TrendingUp, Award, Target } from 'lucide-react';
+import { CheckCircle, Clock, Calendar, TrendingUp, Award, Target, RefreshCw } from 'lucide-react';
 
 const WorkerOverview = () => {
   const [tasks, setTasks] = useState({ pending: [], completed: [] });
@@ -12,6 +12,7 @@ const WorkerOverview = () => {
   });
   const [aiSummary, setAiSummary] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshingSummary, setRefreshingSummary] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -38,6 +39,7 @@ const WorkerOverview = () => {
 
   const generateAISummary = async () => {
     try {
+      setRefreshingSummary(true);
       const response = await api.post('/ai/summary');
       setAiSummary(response.data.summary);
     } catch (error) {
@@ -45,6 +47,7 @@ const WorkerOverview = () => {
       setAiSummary('Conducted farmer training in Kurnool with 35 attendees. Primary concern raised was irrigation water shortage across 3 villages. Women participated in the survey, with a total of 62% recommending a follow-up survey next week.');
     } finally {
       setLoading(false);
+      setRefreshingSummary(false);
     }
   };
 
@@ -102,9 +105,18 @@ const WorkerOverview = () => {
 
       {/* AI Summary */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <Award className="w-5 h-5 text-purple-600" />
-          <h3 className="font-semibold text-gray-900">AI SUMMARY · YESTERDAY</h3>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center space-x-2">
+            <Award className="w-5 h-5 text-purple-600" />
+            <h3 className="font-semibold text-gray-900">AI SUMMARY · YESTERDAY</h3>
+          </div>
+          <button
+            onClick={generateAISummary}
+            className="flex items-center space-x-2 px-3 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg hover:bg-purple-50 transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshingSummary ? 'animate-spin' : ''}`} />
+            <span>{refreshingSummary ? 'Generating...' : 'Refresh Summary'}</span>
+          </button>
         </div>
         <p className="text-gray-700 leading-relaxed">
           {loading ? 'Generating AI summary...' : aiSummary}
